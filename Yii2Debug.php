@@ -112,7 +112,7 @@ class Yii2Debug extends CApplicationComponent
 		}
 
 		Yii::app()->attachEventHandler('onEndRequest', array($this, 'onEndRequest'));
-		$this->initToolbar();
+		//$this->initToolbar();
 	}
 
 	/**
