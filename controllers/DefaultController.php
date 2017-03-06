@@ -34,7 +34,11 @@ class DefaultController extends CController
 	 */
 	public function actionIndex()
 	{
-		$this->render('index', array(
+	    $view = $this->getOwner()->isConsoleLog
+            ? 'console/index'
+            : 'index';
+
+		$this->render($view, array(
 			'manifest' => $this->getManifest(),
 		));
 	}
@@ -57,7 +61,12 @@ class DefaultController extends CController
 		} else {
 			$activePanel = $this->getOwner()->panels['request'];
 		}
-		$this->render('view', array(
+
+        $view = $this->getOwner()->isConsoleLog
+            ? 'console/view'
+            : 'view';
+
+		$this->render($view, array(
 			'tag' => $tag,
 			'summary' => $this->summary,
 			'manifest' => $this->getManifest(),

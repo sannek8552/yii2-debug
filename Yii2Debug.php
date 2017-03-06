@@ -68,6 +68,8 @@ class Yii2Debug extends CApplicationComponent
 		'components/db/password',
 	);
 
+    public $isConsoleLog = false;
+
 	private $_tag;
 
 	/**
@@ -129,12 +131,9 @@ class Yii2Debug extends CApplicationComponent
 	 */
 	protected function corePanels()
 	{
-		return array(
+		$defaultPanels = array(
 			'config' => array(
 				'class' => 'Yii2ConfigPanel',
-			),
-			'request' => array(
-				'class' => 'Yii2RequestPanel',
 			),
 			'log' => array(
 				'class' => 'Yii2LogPanel',
@@ -146,6 +145,14 @@ class Yii2Debug extends CApplicationComponent
 				'class' => 'Yii2DbPanel',
 			),
 		);
+
+        if (!$this->isConsoleLog) {
+            $defaultPanels['request'] = [
+                'class' => 'Yii2RequestPanel',
+            ];
+        }
+
+        return $defaultPanels;
 	}
 
 	protected function coreUrlRules()
@@ -231,15 +238,27 @@ JS
 		}
 
 		$request = Yii::app()->getRequest();
-		$data['summary'] = array(
-			'tag' => $this->getTag(),
-			'url' => $request->getHostInfo() . $request->getUrl(),
-			'ajax' => $request->getIsAjaxRequest(),
-			'method' => $request->getRequestType(),
-			'code' => $statusCode,
-			'ip' => $request->getUserHostAddress(),
-			'time' => time(),
-		);
+
+        $summary = [
+            'tag' => $this->getTag(),
+            'code' => $statusCode,
+            'ip' => $request->getUserHostAddress(),
+            'time' => time(),
+        ];
+
+        if ($this->isConsoleLog) {
+            $cmd = $_SERVER['argv'][1];
+            if (isset($_SERVER['argv'][2])) {
+                $cmd .= '/'.$_SERVER['argv'][2];
+            }
+            $summary['command'] = $cmd;
+        } else {
+            $summary['url']     = $request->getHostInfo() . $request->getUrl();
+            $summary['ajax']    = $request->getIsAjaxRequest();
+            $summary['method']  = $request->getRequestType();
+        }
+
+        $data['summary'] = $summary;
 
 		$path = $this->logPath;
 		if (!is_dir($path)) mkdir($path);
