@@ -70,6 +70,8 @@ class Yii2Debug extends CApplicationComponent
 
     public $isConsoleLog = false;
 
+    public $lockTimeLimit = 2000; // 2 sec
+
 	private $_tag;
 
 	/**
@@ -244,6 +246,7 @@ JS
             'code' => $statusCode,
             'ip' => $request->getUserHostAddress(),
             'time' => time(),
+            'profiling_time' => $data['profiling']['time'],
         ];
 
         if ($this->isConsoleLog) {
@@ -265,6 +268,10 @@ JS
 
 		file_put_contents("$path/{$this->getTag()}.data", serialize($data));
 		$this->updateIndexFile("$path/index.data", $data['summary']);
+
+		if ($data['profiling']['time']*1000 > $this->lockTimeLimit) {
+		    $this->setLock($this->getTag(), true);
+        }
 	}
 
 	/**
