@@ -296,7 +296,7 @@ JS
 			// error while reading index data, ignore and create new
 			$manifest = array();
 		} else {
-			$manifest = unserialize($manifest);
+			$manifest = @unserialize($manifest) ?? [];
 		}
 
 		$manifest[$this->tag] = $summary;
@@ -383,7 +383,8 @@ JS
 		if ($this->_locks === null) {
 			$locksFile = $this->logPath . '/locks.data';
 			if (is_file($locksFile)) {
-				$this->_locks = array_flip(unserialize(file_get_contents($locksFile)));
+                $res = @unserialize(file_get_contents($locksFile));
+                $this->_locks = $res ? array_flip($res) : [];
 			} else {
 				$this->_locks = array();
 			}
