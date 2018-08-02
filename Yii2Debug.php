@@ -70,7 +70,7 @@ class Yii2Debug extends CApplicationComponent
 
     public $isConsoleLog = false;
 
-    public $lockTimeLimit = 2000; // 2 sec
+    public $lockTimeLimit = false;
 
 	private $_tag;
 
@@ -269,7 +269,7 @@ JS
 		file_put_contents("$path/{$this->getTag()}.data", serialize($data));
 		$this->updateIndexFile("$path/index.data", $data['summary']);
 
-		if ($data['profiling']['time']*1000 > $this->lockTimeLimit) {
+		if ($this->lockTimeLimit && $data['profiling']['time']*1000 > $this->lockTimeLimit) {
 		    $this->setLock($this->getTag(), true);
         }
 	}
@@ -283,7 +283,13 @@ JS
 	 */
 	private function updateIndexFile($indexFile, $summary)
 	{
-		touch($indexFile);
+        if (!file_exists($indexFile)) {
+            touch($indexFile);
+            chmod($indexFile, 0776);
+        } else {
+            touch($indexFile);
+        }
+
 		if (($fp = @fopen($indexFile, 'r+')) === false) {
 			throw new Exception("Unable to open debug data index file: $indexFile");
 		}
@@ -391,23 +397,27 @@ JS
 		return isset($this->_locks[$tag]);
 	}
 
-	/**
-	 * @param string $tag
-	 * @param bool $value
-	 */
-	public function setLock($tag, $value)
-	{
-		$value = !!$value;
-		if ($this->getLock($tag) !== $value) {
-			if ($value) {
-				$this->_locks[$tag] = true;
-			} else {
-				unset($this->_locks[$tag]);
-			}
-			$locksFile = $this->logPath . '/locks.data';
-			file_put_contents($locksFile, serialize(array_keys($this->_locks)));
-		}
-	}
+    /**
+     * @param string $tag
+     * @param bool $value
+     */
+    public function setLock($tag, $value)
+    {
+        $value = !!$value;
+        if ($this->getLock($tag) !== $value) {
+            if ($value) {
+                $this->_locks[$tag] = true;
+            } else {
+                unset($this->_locks[$tag]);
+            }
+            $locksFile = $this->logPath . '/locks.data';
+            if (!file_exists($locksFile)) {
+                touch($locksFile);
+                chmod($locksFile, 0776);
+            }
+            file_put_contents($locksFile, serialize(array_keys($this->_locks)));
+        }
+    }
 
 	/**
 	 * Convert data to plain array in recursive manner.

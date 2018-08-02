@@ -25,6 +25,7 @@ $this->pageTitle = 'Available Debug Data - Yii Debugger';
 				<tr>
 					<th style="width:20px;text-align:center;"><i class="icon-star"></i></th>
 					<th style="width: 160px;">Time</th>
+                    <th style="width: 160px;">Profiling Time</th>
 					<th style="width: 120px;">IP</th>
 					<th style="width: 40px;">Code</th>
 					<th>Command</th>
@@ -44,6 +45,7 @@ $this->pageTitle = 'Available Debug Data - Yii Debugger';
 							); ?>
 						</td>
 						<td><?php echo CHtml::link(date('Y-m-d h:i:s', $data['time']), array('view', 'tag' => $tag, 'panel' => 'db')); ?></td>
+                        <td><?= isset($data['profiling_time']) ? number_format($data['profiling_time'] * 1000) . ' ms' : 'empty' ?></td>
 						<td><?php echo $data['ip']; ?></td>
 						<td style="text-align:center;"><?php echo isset($data['code']) ? Yii2RequestPanel::getStatusCodeHtml($data['code']) : ''; ?></td>
 						<td style="word-break:break-all;">
